@@ -2,48 +2,46 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
+use App\Models\Company;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
-
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $superAdminRole = Role::where('name', 'super_admin')->first();
-        $companyAdminRole = Role::where('name', 'company_admin')->first();
-        $agentRole = Role::where('name', 'agent')->first();
-        $customerRole = Role::where('name', 'customer')->first();
+        $demo = Company::where('slug', 'demo-company')->first();
+        $second = Company::where('slug', 'second-co')->first();
 
-        // 1️⃣ Super Admin 
-        $superAdmin = User::firstOrCreate(
-            ['email' => 'superadmin@test.com'],
-            [
-                'name' => 'Super Admin',
-                'password' => Hash::make('password'),
-            ]
+        // Super Admin (بدون شركة)
+        $super = User::firstOrCreate(
+            ['email' => 'super@admin.com'],
+            ['name' => 'super_admin', 'password' => Hash::make('password'), 'company_id' => null]
         );
-        $superAdmin->assignRole($superAdminRole);
+        $super->syncRoles(['super_admin']);
 
-        // 2️⃣ Company Admins 
-        User::factory(2)->create()->each(function ($user) use ($companyAdminRole) {
-            $user->assignRole($companyAdminRole);
-        });
+        // Company Admin demo
+        $adminDemo = User::firstOrCreate(
+            ['email' => 'admin@demo.com'],
+            ['name' => 'company_admin', 'password' => Hash::make('password'), 'company_id' => $demo?->id]
+        );
+        $adminDemo->syncRoles(['company_admin']);
 
-        // 3️⃣ Agents 
-        User::factory(5)->create()->each(function ($user) use ($agentRole) {
-            $user->assignRole($agentRole);
-        });
+        // Agents demo
+        for ($i = 1; $i <= 2; $i++) {
+            $agent = User::firstOrCreate(
+                ['email' => "agent{$i}@demo.com"],
+                ['name' => "Demo Agent {$i}", 'password' => Hash::make('password'), 'company_id' => $demo?->id]
+            );
+            $agent->syncRoles(['agent']);
+        }
 
-        // 4️⃣ Customers 
-        User::factory(10)->create()->each(function ($user) use ($customerRole) {
-            $user->assignRole($customerRole);
-        });
+        // Company Admin second
+        $admin2 = User::firstOrCreate(
+            ['email' => 'admin@second.com'],
+            ['name' => 'company_admin', 'password' => Hash::make('password'), 'company_id' => $second?->id]
+        );
+        $admin2->syncRoles(['company_admin']);
     }
 }

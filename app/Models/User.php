@@ -35,21 +35,12 @@ public function canAccessPanel(Panel $panel): bool
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+   
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -57,5 +48,18 @@ public function canAccessPanel(Panel $panel): bool
             'password' => 'hashed',
         ];
     }
-    
+    // relationships
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasAnyRole('super_admin');
+    }
+    public function isCompanyAdmin(): bool
+    {
+        return $this->hasAnyRole('company_admin');
+    }
+   
 }
